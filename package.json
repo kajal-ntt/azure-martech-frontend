@@ -1,0 +1,49 @@
+{
+  "name": "enterprise-marktech-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "copy-ffmpeg": "shx mkdir -p public/ffmpeg && shx cp node_modules/@ffmpeg/core/dist/esm/ffmpeg-core.js public/ffmpeg/ && shx cp node_modules/@ffmpeg/core/dist/esm/ffmpeg-core.wasm public/ffmpeg/",
+    "postinstall": "npm run copy-ffmpeg",
+    "test": "jest --coverage"
+  },
+  "dependencies": {
+    "@ffmpeg/core": "0.12.6",
+    "@ffmpeg/ffmpeg": "0.12.10",
+    "@ffmpeg/util": "0.12.1",
+    "better-auth": "^1.6.0",
+    "fabric": "^7.3.1",
+    "grapesjs": "^0.22.16",
+    "grapesjs-preset-newsletter": "^1.0.2",
+    "konva": "9.3.18",
+    "lucide-react": "^1.8.0",
+    "next": "16.2.2",
+    "react": "19.2.4",
+    "react-color": "^2.19.3",
+    "react-dom": "19.2.4",
+    "react-filerobot-image-editor": "^5.0.0-beta.156",
+    "react-konva": "19.2.3",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
+    "shx": "^0.4.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-color": "^3.0.13",
+    "@types/react-dom": "^19",
+    "fast-check": "^4.7.0",
+    "jest": "^30.3.0",
+    "jest-environment-jsdom": "^30.3.0",
+    "tailwindcss": "^4",
+    "ts-jest": "^29.4.9",
+    "typescript": "^5"
+  }
+}
