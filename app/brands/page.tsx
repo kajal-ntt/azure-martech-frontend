@@ -179,11 +179,7 @@ function BrandOnboardingContent() {
 
             if (logoData?.url) {
                 const raw = logoData.url as string;
-                const proxied = `/api/image-proxy?url=${encodeURIComponent(
-                    raw.startsWith("gs://")
-                        ? raw.replace("gs://", "https://storage.googleapis.com/")
-                        : raw.replace("https://storage.cloud.google.com/", "https://storage.googleapis.com/")
-                )}`;
+                const proxied = `/api/image-proxy?url=${encodeURIComponent(raw)}`;
                 setExistingLogoUrl(proxied);
             }
 
@@ -379,6 +375,29 @@ function BrandOnboardingContent() {
                 body: JSON.stringify({ brand_id: currentBrandId }),
             });
             if (!agentRes.ok) throw new Error("Failed to invoke AI agent");
+
+            const agentData = await agentRes.json();
+
+            console.log("AGENT DATA", agentData);
+
+            const saveBriefRes = await fetch(
+                `/api/brands/${currentBrandId}/kit/brief`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        brandBrief: agentData.data.brand_brief,
+                    }),
+                }
+            );
+
+            console.log("SAVE BRIEF STATUS", saveBriefRes.status);
+
+            const saveBriefData = await saveBriefRes.json();
+
+            console.log("SAVE BRIEF RESPONSE", saveBriefData);
 
             // Move to analyzing stage — lock the form
             // Poll for brand brief

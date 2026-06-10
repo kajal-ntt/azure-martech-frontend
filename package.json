@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --webpack",
     "build": "next build",
     "start": "next start",
     "copy-ffmpeg": "shx mkdir -p public/ffmpeg && shx cp node_modules/@ffmpeg/core/dist/esm/ffmpeg-core.js public/ffmpeg/ && shx cp node_modules/@ffmpeg/core/dist/esm/ffmpeg-core.wasm public/ffmpeg/",
