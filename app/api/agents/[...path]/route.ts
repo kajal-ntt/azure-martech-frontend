@@ -12,15 +12,21 @@ export async function POST(
   
   const body = await req.text();
   const authHeader = (await headers()).get("authorization") ?? "";
+  const cookieHeader = req.headers.get("cookie");
+
+  console.log("[proxy] Auth Header:", authHeader ? "PRESENT" : "MISSING");  
+  console.log("[proxy] Cookie Header:", cookieHeader ? "PRESENT" : "MISSING");
 
   try {
     const targetUrl = `${AGENT_URL}/agents/${targetPath}`;
     console.log(`[proxy] Forwarding POST to ${targetUrl}`);
+
     const res = await fetch(targetUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         ...(authHeader ? { Authorization: authHeader } : {}),
+        ...(cookieHeader ? { Cookie: cookieHeader } : {})
       },
       body,
     });

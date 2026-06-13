@@ -298,7 +298,7 @@ function BrandOnboardingContent() {
                         marketingConsent: formData.marketingConsent,
                     }),
                 });
-                if (!brandRes.ok) throw new Error("Failed to create brand profile");
+                if (!brandRes.ok) throw new Error(`Brand API failed: ${brandRes.status}`);
                 const brand = await brandRes.json();
                 currentBrandId = brand.id;
                 setBrandId(currentBrandId!);
@@ -364,6 +364,7 @@ function BrandOnboardingContent() {
 
             // ── Step 4: Invoke AI brand analysis ──────────────────────────
             const token = await getAgentToken();
+            console.log("AGENT TOKEN:", token);
             if (!token) throw new Error("Could not get auth token");
 
             const agentRes = await fetch(`${agentBase}/agents/brand/invoke`, {
@@ -372,8 +373,11 @@ function BrandOnboardingContent() {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${token}`,
                 },
-                body: JSON.stringify({ brand_id: currentBrandId }),
+                body: JSON.stringify({ 
+                    brand_id: currentBrandId,
+                 }),
             });
+            console.log("AGENT RESPONSE:", agentRes);
             if (!agentRes.ok) throw new Error("Failed to invoke AI agent");
 
             const agentData = await agentRes.json();
