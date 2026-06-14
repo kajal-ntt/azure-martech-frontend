@@ -9,47 +9,54 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "url param required" }, { status: 400 });
   }
 
-  // For non-GCS URLs (e.g. picsum placeholders), fetch directly
-  if (!url.startsWith("https://storage.googleapis.com/")) {
+  // Azure Blob Storage — proxy through Node backend (private container)
+  if (url.includes("blob.core.windows.net")) {
     try {
-      const res = await fetch(url, { cache: "no-store" });
-      if (!res.ok) return new NextResponse(null, { status: res.status });
-      const contentType = res.headers.get("content-type") ?? "image/png";
-      const buffer = await res.arrayBuffer();
+      const backendRes = await fetch(
+        `${BACKEND_URL}/api/creatives/proxy-image?url=${encodeURIComponent(url)}`,
+        { cache: "no-store" }
+      );
+
+      if (!backendRes.ok) {
+        return new NextResponse(null, { status: backendRes.status });
+      }
+
+      const contentType = backendRes.headers.get("content-type") ?? "application/octet-stream";
+      const buffer = await backendRes.arrayBuffer();
+
       return new NextResponse(buffer, {
         status: 200,
-        headers: { "Content-Type": contentType, "Cache-Control": "public, max-age=3600" },
+        headers: {
+          "Content-Type": contentType,
+          "Cache-Control": "private, max-age=3600",
+        },
       });
     } catch (err) {
-      console.error("[image-proxy] direct fetch error:", err);
+      console.error("[image-proxy] azure error:", err);
       return new NextResponse(null, { status: 502 });
     }
   }
 
-  // GCS URLs — proxy through backend which has credentials
+  // GCS / external URLs — fetch directly
   try {
-    const backendRes = await fetch(
-      `${BACKEND_URL}/api/creatives/proxy-image?url=${encodeURIComponent(url)}`,
-      { cache: "no-store" }
-    );
+    const res = await fetch(url, { cache: "no-store" });
 
-    if (!backendRes.ok) {
-      return new NextResponse(null, { status: backendRes.status });
+    if (!res.ok) {
+      return new NextResponse(null, { status: res.status });
     }
 
-    const contentType = backendRes.headers.get("content-type") ?? "image/png";
-    const buffer = await backendRes.arrayBuffer();
+    const contentType = res.headers.get("content-type") ?? "application/octet-stream";
+    const buffer = await res.arrayBuffer();
 
     return new NextResponse(buffer, {
       status: 200,
       headers: {
         "Content-Type": contentType,
         "Cache-Control": "public, max-age=3600",
-        "Accept-Ranges": "bytes",
       },
     });
   } catch (err) {
-    console.error("[image-proxy] error:", err);
+    console.error("[image-proxy] fallback error:", err);
     return new NextResponse(null, { status: 502 });
   }
 }

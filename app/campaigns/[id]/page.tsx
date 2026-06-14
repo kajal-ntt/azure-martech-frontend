@@ -106,27 +106,25 @@ export default function CampaignDetailsPage() {
     const refImageInputRef = useRef<HTMLInputElement>(null);
 
     // Normalise any raw GCS URL to a proxied /api/image-proxy URL the browser can load
-    const toProxiedUrl = useCallback((raw: string | null | undefined): string | null => {
-        if (!raw) return null;
-        // Already proxied
-        if (raw.startsWith("/api/image-proxy")) return raw;
-        // gs:// → https://storage.googleapis.com/
-        const https = raw.startsWith("gs://")
-            ? raw.replace("gs://", "https://storage.googleapis.com/")
-            : raw;
-        // Proxy all GCS URLs (and storage.cloud.google.com variants)
-        if (
-            https.startsWith("https://storage.googleapis.com/") ||
-            https.startsWith("https://storage.cloud.google.com/")
-        ) {
-            const normalised = https.replace(
-                "https://storage.cloud.google.com/",
-                "https://storage.googleapis.com/"
-            );
-            return `/api/image-proxy?url=${encodeURIComponent(normalised)}`;
-        }
-        return https;
-    }, []);
+   const toProxiedUrl = useCallback((raw: string | null | undefined): string | null => {
+    if (!raw) return null;
+
+    // Already proxied
+    if (raw.startsWith("/api/image-proxy")) return raw;
+
+    // ✅ HANDLE AZURE (IMPORTANT FIX)
+    if (raw.includes("blob.core.windows.net")) {
+        return raw; // don't proxy
+    }
+
+    // GCS fallback
+    if (raw.startsWith("gs://")) {
+        const https = raw.replace("gs://", "https://storage.googleapis.com/");
+        return `/api/image-proxy?url=${encodeURIComponent(https)}`;
+    }
+
+    return raw;
+}, []);
     const fetchSignedUrl = useCallback(async (id: string): Promise<string | null> => {
         try {
             const res = await fetch(`/api/creatives/${id}/signed-url`);
@@ -1203,6 +1201,7 @@ interface BlogCreativeCardProps {
 
 function BlogCreativeCard({ creatives, campaignId, generatingBlog, setGeneratingBlog, router }: BlogCreativeCardProps) {
     const blogCreative = creatives.find((c: any) => c.type === "BLOG");
+    const blogText = blogCreative?.adCopy ||"AI-generated SEO blog post.";
     const hasGenerated = blogCreative?.status === "GENERATED";
 
     const handleGenerate = async () => {
@@ -1229,9 +1228,11 @@ function BlogCreativeCard({ creatives, campaignId, generatingBlog, setGenerating
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700">BLOG</span>
             </div>
             <div className="flex items-center gap-2 py-3 px-3 bg-zinc-50 rounded-lg border border-dashed border-zinc-200">
-                <span className="text-xs text-zinc-400 italic">
-                    {blogCreative?.status === "GENERATING" ? "Generating..." : "AI-generated SEO blog post."}
-                </span>
+                <div className="text-sm text-zinc-700 leading-relaxed">
+                    {blogCreative?.status === "GENERATING"
+                        ? "Generating..."
+                        : blogText}
+                </div>
             </div>
             <div className="flex gap-2">
                 {hasGenerated && (

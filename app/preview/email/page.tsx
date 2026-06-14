@@ -49,6 +49,10 @@ interface PollStatus {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function toProxiedUrl(url: string): string {
+  // Azure blob — proxy as-is
+  if (url.includes("blob.core.windows.net")) {
+    return `/api/image-proxy?url=${encodeURIComponent(url)}`;
+  }
   const publicUrl = url.startsWith("gs://")
     ? url.replace("gs://", "https://storage.googleapis.com/")
     : url;
@@ -56,10 +60,13 @@ function toProxiedUrl(url: string): string {
 }
 
 function getSubjectLine(creative: EmailCreative): string {
-  return creative.subjectLine
-    ?? creative.metadata?.subject_line
-    ?? (creative as any).headlines?.[0]
-    ?? "";
+  
+    return (
+    creative.subjectLine ??
+    (creative as any).headline ??
+    creative.metadata?.subject_line ??
+    ""
+  );
 }
 
 function getPreheader(creative: EmailCreative): string {
@@ -123,7 +130,7 @@ function proxyImagesInHtml(html: string): string {
 }
 
 function getPollStatus(data: EmailCreative | null, pollCount: number): PollStatus {
-  const isDone = data?.status === "GENERATED" && data?.url != null;
+  const isDone = data?.status === "GENERATED";
   const wasRecentlyUpdated = Boolean(
     data?.createdAt && (Date.now() - new Date(data.createdAt).getTime()) < 120000
   );
@@ -357,7 +364,7 @@ function EmailPreviewFrame({
 
   return (
     <div className="bg-white border border-zinc-200 rounded-2xl shadow-xl overflow-hidden" style={{ width: iframeWidth }}>
-      {activeTab === "html" ? (
+    {htmlContent ? (
         <iframe
           title="Email Preview"
           sandbox="allow-same-origin allow-scripts"
@@ -548,29 +555,20 @@ function EmailPreviewContent() {
       pollCountRef.current += 1;
       const { isDone, isFailed, hitMax, shouldUseRecentUrl } = getPollStatus(data, pollCountRef.current);
 
-      if ((shouldUseRecentUrl || isDone) && data?.url) {
-        fetchHtml(data.url);
-        fetchText(getTextTemplateUrl(data));
-        // Fetch the agent trace once the email is ready — single request, no polling
-        if (isDone && creativeId) {
-          fetch(`/api/agent-traces?creativeId=${encodeURIComponent(creativeId)}&pageSize=1`, { cache: "no-store" })
-            .then((r) => r.ok ? r.json() : null)
-            .then((traceData) => {
-              const t = traceData?.traces?.[0];
-              if (t && !cancelledRef.current) {
-                setAgentUsage({
-                  totalTokens: t.totalTokens ?? 0,
-                  inputTokens: t.inputTokens ?? 0,
-                  outputTokens: t.outputTokens ?? 0,
-                  executionTimeMs: t.executionTimeMs ?? 0,
-                });
-              }
-            })
-            .catch(() => {});
-        }
-        return;
-      }
+     if (isDone && data) {
+  // ✅ If HTML URL exists → use iframe
+  if (data.url) {
+    fetchHtml(data.url);
+    fetchText(getTextTemplateUrl(data));
+  } 
+  // ✅ ELSE fallback to adCopy (YOUR CASE)
+  else if ((data as any).adCopy) {
+    setHtmlContent(null);
+    setTextContent((data as any).adCopy);
+  }
 
+  return;
+}
       if (isFailed || hitMax) return;
 
       setTimeout(poll, getPollingDelay(pollCountRef.current));
@@ -626,8 +624,7 @@ function EmailPreviewContent() {
     creative.status === "GENERATING";
 
   const isFailed = creative?.status === "FAILED";
-  const isReady = creative?.status === "GENERATED" && htmlContent !== null;
-  const hasTextTemplate = textContent !== null;
+  const isReady = creative?.status === "GENERATED";  const hasTextTemplate = textContent !== null;
 
   const subjectLine = creative ? getSubjectLine(creative) : "";
   const preheader = creative ? getPreheader(creative) : "";

@@ -21,15 +21,21 @@ export async function POST(
     const targetUrl = `${AGENT_URL}/agents/${targetPath}`;
     console.log(`[proxy] Forwarding POST to ${targetUrl}`);
 
-    const res = await fetch(targetUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(authHeader ? { Authorization: authHeader } : {}),
-        ...(cookieHeader ? { Cookie: cookieHeader } : {})
-      },
-      body,
-    });
+    const controller = new AbortController();
+const timeout = setTimeout(() => controller.abort(), 600000); // 10 minutes
+
+const res = await fetch(targetUrl, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    ...(authHeader ? { Authorization: authHeader } : {}),
+    ...(cookieHeader ? { Cookie: cookieHeader } : {})
+  },
+  body,
+  signal: controller.signal,
+});
+
+clearTimeout(timeout);
     console.log(`[proxy] Received ${res.status} from ${targetUrl}`);
 
     const text = await res.text();
