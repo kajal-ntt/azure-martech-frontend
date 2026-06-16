@@ -116,19 +116,13 @@ function substitutePlaceholders(html: string, brandName: string): string {
  * blocked by CORS / auth and the logo would be invisible otherwise.
  */
 function proxyImagesInHtml(html: string): string {
-  // Match src="..." and src='...' attributes whose value is a GCS URL
   return html.replaceAll(
-    /(src=["'])(gs:\/\/[^"']+|https:\/\/storage\.googleapis\.com\/[^"']+)(["'])/gi,
+    /(src=["'])(https:\/\/[^"']*blob\.core\.windows\.net\/[^"']+)(["'])/gi,
     (_match, prefix, url, suffix) => {
-      // Normalise gs:// → https://storage.googleapis.com/
-      const publicUrl = url.startsWith("gs://")
-        ? url.replace("gs://", "https://storage.googleapis.com/")
-        : url;
-      return `${prefix}/api/image-proxy?url=${encodeURIComponent(publicUrl)}${suffix}`;
+      return `${prefix}/api/image-proxy?url=${encodeURIComponent(url)}${suffix}`;
     }
   );
 }
-
 function getPollStatus(data: EmailCreative | null, pollCount: number): PollStatus {
   const isDone = data?.status === "GENERATED";
   const wasRecentlyUpdated = Boolean(
