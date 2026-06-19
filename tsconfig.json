@@ -33,6 +33,10 @@
   "exclude": [
     "node_modules",
     "EditorCanvas_HEAD.tsx",
-    "TextStylePanel_before.tsx"
+    "TextStylePanel_before.tsx",
+    "jest.setup.ts",
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "**/__tests__/**"
   ]
 }
