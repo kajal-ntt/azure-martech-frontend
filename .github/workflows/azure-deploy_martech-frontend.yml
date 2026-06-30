@@ -52,4 +52,4 @@ jobs:
           app-name: 'martech-frontend'
           slot-name: 'Production'
           package: .
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_ADB35D6629E4469E9BC49A7A2871CA79 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_C245CC7EA3954775A703D18AF0B6838E }}
