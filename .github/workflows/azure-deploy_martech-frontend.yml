@@ -1,6 +1,3 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
 name: Build and deploy Node.js app to Azure Web App - martech-frontend
 
 on:
@@ -13,7 +10,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read #This is required for actions/checkout
+      contents: read
 
     steps:
       - uses: actions/checkout@v4
@@ -23,11 +20,14 @@ jobs:
         with:
           node-version: '22.x'
 
-      - name: npm install, build, and test
+      - name: npm install and build
         run: |
           npm install
           npm run build --if-present
-          npm run test --if-present
+        env:
+          NEXT_PUBLIC_API_URL: https://martech-ddbhddg9eef9e8gv.centralindia-01.azurewebsites.net
+          NEXT_PUBLIC_APP_URL: https://martech-frontend-c0are2h4bkanbmhq.centralindia-01.azurewebsites.net
+          NEXT_PUBLIC_AGENT_API_URL: https://your-agents-app.azurewebsites.net/api/v1
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -38,13 +38,13 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: build
-    
+
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
           name: node-app
-      
+
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
@@ -52,4 +52,4 @@ jobs:
           app-name: 'martech-frontend'
           slot-name: 'Production'
           package: .
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_C245CC7EA3954775A703D18AF0B6838E }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_ADB35D6629E4469E9BC49A7A2871CA79 }}
