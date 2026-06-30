@@ -13,20 +13,31 @@ type SessionPayload = {
 };
 
 async function getSessionFromBackend(): Promise<SessionPayload | null> {
-  const cookie = (await headers()).get("cookie") ?? "";
-
   if (USE_DUMMY_DATA) {
     return dummySession;
   }
 
+  const cookie = (await headers()).get("cookie") ?? "";
   const authURL = (process.env.AUTH_BACKEND_URL || "http://localhost:8000").replace(/\/$/, "");
   try {
-    const response = await fetch(`${authURL}/api/auth/get-session`, {
+    const response = await fetch(`${authURL}/api/auth/session`, {
       headers: { cookie },
       cache: "no-store",
     });
     if (!response.ok) return null;
-    return (await response.json()) as SessionPayload | null;
+    const body = await response.json();
+    if (!body?.authenticated) return null;
+    return {
+      user: {
+        id: body.user.username,
+        name: body.user.name,
+        email: body.user.username,
+      },
+      session: {
+        token: "dummy",
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      },
+    };
   } catch (err) {
     console.warn("Backend connection failed. Returning null session dummy.", err);
     return null;

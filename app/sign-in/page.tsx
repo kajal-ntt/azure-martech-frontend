@@ -1,11 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import type { ReactNode } from "react";
-import { Suspense, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
-//import { authClient } from "@/lib/auth-client";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
 import { USE_DUMMY_DATA } from "@/lib/dummy-data";
 
 const FEATURE_ITEMS = [
@@ -24,7 +22,6 @@ export default function SignInPage() {
 }
 
 function SignInContent() {
-  // const session = authClient.useSession();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSigningIn, setIsSigningIn] = useState(false);
   const router = useRouter();
@@ -34,13 +31,7 @@ function SignInContent() {
   const searchParams = useSearchParams();
   const returnUrl = searchParams.get("returnUrl") || "/dashboard";
 
-  // const userLabel = useMemo(() => {
-  //   const user = session.data?.user;
-  //   if (!user) return null;
-  //   return user.email || user.name || "Signed in";
-  // }, [session.data?.user]);
-
-  const handleMicrosoftSignIn = async () => {
+  const handleLogin = async () => {
     setErrorMessage(null);
     setIsSigningIn(true);
 
@@ -49,129 +40,51 @@ function SignInContent() {
       return;
     }
 
-    try {
-      const result = await authClient.signIn.social({
-        provider: "microsoft",
-        callbackURL: `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}${returnUrl}`,
-      });
-      if (result?.error) {
-        console.error("[sign-in] Microsoft OAuth error:", result.error);
-        
-        // Handle rate limiting specifically
-        if (result.error.status === 429) {
-          setErrorMessage(
-            "Too many sign-in attempts. Please wait a few minutes before trying again. " +
-            "This is a temporary rate limit from Microsoft OAuth to prevent abuse."
-          );
-        } else {
-          setErrorMessage(
-            `${result.error.message ?? "Sign in failed"} — ${result.error.status ?? ""} ${result.error.code ?? ""}`
-          );
-        }
-      }
-    } catch (err: any) {
-      console.error("[sign-in] Exception:", err);
-      setErrorMessage(err?.message ?? "Sign in failed. Please try again.");
-    } finally {
-      setIsSigningIn(false);
+    const result = await authClient.signIn(username, password);
+    setIsSigningIn(false);
+
+    if (result.error) {
+      setErrorMessage(result.error.message);
+      return;
     }
+
+    router.push(returnUrl);
   };
 
-  let authContent: ReactNode;
-  if (session.isPending) {
-    authContent = (
-      <div className="text-center p-10 border rounded-2xl border-dashed">
-        <p className="text-zinc-500 animate-pulse">Checking session...</p>
-      </div>
-    );
-  } else if (session.data?.user) {
-    authContent = (
-      <div className="rounded-2xl border border-zinc-100 bg-zinc-50 p-6">
-        <p className="text-sm text-zinc-600">
-          Signed in as <span className="font-bold text-zinc-900">{userLabel}</span>
-        </p>
-        <div className="mt-6 flex flex-col gap-3">
-          <Link
-            href={returnUrl}
-            className="flex h-12 items-center justify-center rounded-xl bg-[#4CAF31] font-bold text-white hover:bg-[#3d8e27] transition-colors"
-          >
-            Go to Dashboard
-          </Link>
-          <button
-            onClick={async () => {
-              const res = await authClient.signOut();
-              if (res.error) {
-                console.error("Sign out error", res.error);
-                alert("Error signing out: " + res.error.message);
-              } else {
-                globalThis.location.href = "/sign-in";
-              }
-            }}
-            className="text-sm text-zinc-400 hover:text-red-500 transition-colors"
-          >
-            Sign Out
-          </button>
-        </div>
-      </div>
-    );
-  } else {
-    authContent = (
-      <div className="space-y-6">
-        <button
-          onClick={handleMicrosoftSignIn}
-          disabled={isSigningIn}
-          className="group flex h-14 w-full items-center justify-center gap-3 rounded-xl bg-[#4CAF31] px-6 font-bold text-white transition-all hover:bg-[#3d8e27] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#4CAF31]"
-        >
-          {isSigningIn ? (
-            <>
-              <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Signing in...
-            </>
-          ) : (
-            <>
-              Continue with Microsoft
-              <svg className="h-5 w-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-              </svg>
-            </>
-          )}
-        </button>
+  const authContent = (
+    <div className="space-y-5">
+      <input
+        type="text"
+        placeholder="Username"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
+        className="w-full rounded-xl border border-zinc-300 p-4"
+      />
 
-        {errorMessage && (
-          <div className="rounded-lg bg-red-50 p-4 text-xs text-red-600 border border-red-100 space-y-2">
-            <p className="font-semibold">Authentication Error</p>
-            <p>{errorMessage}</p>
-            {errorMessage.includes("rate limit") ? (
-              <div className="mt-3 pt-3 border-t border-red-200 text-[11px] space-y-1">
-                <p className="font-semibold">Why did this happen?</p>
-                <ul className="list-disc list-inside space-y-0.5 text-red-500">
-                  <li>Multiple sign-in attempts in a short time</li>
-                  <li>Microsoft OAuth has temporary rate limits</li>
-                </ul>
-                <p className="mt-2 font-semibold">What to do:</p>
-                <ul className="list-disc list-inside space-y-0.5 text-red-500">
-                  <li>Wait 2-5 minutes before trying again</li>
-                  <li>Clear your browser cache and cookies</li>
-                  <li>Try using incognito/private mode</li>
-                </ul>
-              </div>
-            ) : (
-              <button
-                onClick={handleMicrosoftSignIn}
-                disabled={isSigningIn}
-                className="text-xs font-bold text-red-600 underline hover:text-red-800 disabled:opacity-50"
-              >
-                Try again
-              </button>
-            )}
-          </div>
-        )}
-      </div>
-    );
-  }
+      <input
+        type="password"
+        placeholder="Password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+        className="w-full rounded-xl border border-zinc-300 p-4"
+      />
+
+      <button
+        onClick={handleLogin}
+        disabled={isSigningIn}
+        className="h-14 w-full rounded-xl bg-[#4CAF31] text-white font-bold hover:bg-[#3d8e27] disabled:opacity-50"
+      >
+        {isSigningIn ? "Signing in..." : "Login"}
+      </button>
+
+      {errorMessage && (
+        <div className="rounded-lg bg-red-50 border border-red-100 p-3 text-red-600 text-sm">
+          {errorMessage}
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <div className="flex min-h-screen w-full flex-col md:flex-row font-sans bg-white">
@@ -207,7 +120,6 @@ function SignInContent() {
           </ul>
         </div>
 
-        {/* Decorative Grid */}
         <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#4CAF31 0.5px, transparent 0.5px)', backgroundSize: '24px 24px' }}></div>
       </section>
 
@@ -223,7 +135,7 @@ function SignInContent() {
 
           <div className="mt-12 pt-8 border-t border-zinc-100 flex justify-between items-center text-xs text-zinc-400">
             <Link href="/" className="hover:text-zinc-900 transition-colors">← Back home</Link>
-            <span>Powered by Better Auth</span>
+            <span>Powered by MARTECH</span>
           </div>
         </div>
       </section>
