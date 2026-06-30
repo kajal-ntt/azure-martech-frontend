@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
-type SessionUser = { username: string; name: string };
+type SessionUser = { username: string; name: string; email?: string };
 type SessionState = { user: SessionUser } | null;
 
 async function fetchSession(): Promise<SessionState> {
