@@ -4,7 +4,8 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { Suspense, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { authClient } from "@/lib/auth-client";
+//import { authClient } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
 import { USE_DUMMY_DATA } from "@/lib/dummy-data";
 
 const FEATURE_ITEMS = [
@@ -23,17 +24,21 @@ export default function SignInPage() {
 }
 
 function SignInContent() {
-  const session = authClient.useSession();
+  // const session = authClient.useSession();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSigningIn, setIsSigningIn] = useState(false);
+  const router = useRouter();
+
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const searchParams = useSearchParams();
   const returnUrl = searchParams.get("returnUrl") || "/dashboard";
 
-  const userLabel = useMemo(() => {
-    const user = session.data?.user;
-    if (!user) return null;
-    return user.email || user.name || "Signed in";
-  }, [session.data?.user]);
+  // const userLabel = useMemo(() => {
+  //   const user = session.data?.user;
+  //   if (!user) return null;
+  //   return user.email || user.name || "Signed in";
+  // }, [session.data?.user]);
 
   const handleMicrosoftSignIn = async () => {
     setErrorMessage(null);
