@@ -18,7 +18,9 @@ async function getSessionFromBackend(): Promise<SessionPayload | null> {
   }
 
   const cookie = (await headers()).get("cookie") ?? "";
-  const authURL = (process.env.AUTH_BACKEND_URL || "http://localhost:8000").replace(/\/$/, "");
+  const authURL = process.env.AUTH_BACKEND_URL?.replace(/\/$/, "");
+  console.log(authURL);
+
   try {
     const response = await fetch(`${authURL}/api/auth/session`, {
       headers: { cookie },
@@ -67,7 +69,8 @@ export default async function DashboardPage() {
 
   if (!USE_DUMMY_DATA) {
   // Verify if the user has completed brand onboarding
-  const backendURL = (process.env.AUTH_BACKEND_URL || "http://localhost:8000").replace(/\/$/, "");
+  const backendURL = process.env.AUTH_BACKEND_URL?.replace(/\/$/, "");
+  
   const cookieHeader = (await headers()).get("cookie") ?? "";
   try {
     const brandsRes = await fetch(`${backendURL}/api/brands`, {

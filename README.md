@@ -69,7 +69,7 @@ Notes:
 pnpm -C enterprise-marktech-frontend dev
 ```
 
-Open http://localhost:3000
+Open process.env.NEXT_PUBLIC_APP_URL
 
 ---
 
@@ -102,7 +102,7 @@ Client setup: [auth-client.ts](file:///c:/Users/Abhishek.N/Desktop/Gitlab/enterp
 To avoid Better Auth origin/CSRF rejections, ensure the backend trusts the frontend:
 
 - Backend should set `CLIENT_URL` to the frontend origin:
-  - `CLIENT_URL=http://localhost:3000` (dev)
+  - `CLIENT_URL=process.env.NEXT_PUBLIC_APP_URL` (dev)
   - `CLIENT_URL=https://app.example.com` (prod)
 
 If you serve frontend and backend on different domains, cookies can become third-party in some browsers (Safari ITP). The recommended setup is:

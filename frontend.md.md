@@ -1766,7 +1766,7 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 
 # Points to the Python FastAPI Agent Engine:
 NEXT_PUBLIC_AGENT_API_URL=http://localhost:8001/api/v1
-NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_APP_URL=process.env.NEXT_PUBLIC_APP_URL
 
 # Set to "true" to bypass backend/agent and use mock data for rapid UI prototyping
 NEXT_PUBLIC_USE_MOCK=false
@@ -1968,8 +1968,8 @@ const response = await fetch('http://backend:8000/api/auth/get-session', {
 
 ```env
 # Backend configuration
-CLIENT_URL=http://localhost:3000
-TRUSTED_ORIGINS=http://localhost:3000,https://app.example.com
+CLIENT_URL=process.env.NEXT_PUBLIC_APP_URL
+TRUSTED_ORIGINS=process.env.NEXT_PUBLIC_APP_URL,https://app.example.com
 ```
 
 #### Canvas Performance Issues

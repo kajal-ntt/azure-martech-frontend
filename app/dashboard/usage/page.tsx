@@ -40,7 +40,7 @@ async function getSessionFromBackend(): Promise<SessionPayload | null> {
     return dummySession;
   }
 
-  const authURL = (process.env.AUTH_BACKEND_URL || "http://localhost:8000").replace(/\/$/, "");
+  const authURL = process.env.AUTH_BACKEND_URL?.replace(/\/$/, "");
   try {
     const response = await fetch(`${authURL}/api/auth/get-session`, {
       headers: { cookie },
@@ -58,7 +58,7 @@ async function getAgentTraces(
   cookie: string,
   params: Record<string, string>
 ): Promise<AgentTracesResponse> {
-  const backendURL = (process.env.AUTH_BACKEND_URL || "http://localhost:8000").replace(/\/$/, "");
+  const backendURL = process.env.AUTH_BACKEND_URL?.replace(/\/$/, "");
   const url = new URL(`${backendURL}/api/agent-traces`);
   for (const [key, value] of Object.entries(params)) {
     if (value) url.searchParams.set(key, value);

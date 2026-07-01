@@ -14,7 +14,8 @@ async function getSessionFromBackend(): Promise<SessionPayload> {
     return dummySession;
   }
 
-  const authURL = (process.env.AUTH_BACKEND_URL || "http://localhost:8000").replace(/\/$/, "");
+  const authURL = process.env.AUTH_BACKEND_URL?.replace(/\/$/, "");
+  console.log(authURL);
 
   try {
     const response = await fetch(`${authURL}/api/auth/get-session`, {

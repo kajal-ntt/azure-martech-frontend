@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { MOCK_AUDIENCES, USE_MOCK } from "@/lib/mock-data";
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8000";
+const BACKEND_URL = process.env.BACKEND_URL;
 
 export async function POST(
   req: NextRequest,
@@ -12,7 +12,7 @@ export async function POST(
   if (USE_MOCK) return NextResponse.json({ ...MOCK_AUDIENCES[0], id: `mock-audience-${Date.now()}`, brandId: id }, { status: 201 });
 
   const cookie = (await headers()).get("cookie") ?? "";
-  const origin = (await headers()).get("origin") ?? "http://localhost:3000";
+  const origin = (await headers()).get("origin") ?? "process.env.NEXT_PUBLIC_APP_URL";
   const body = await req.text();
 
   try {

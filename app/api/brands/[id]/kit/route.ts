@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { MOCK_BRAND_KIT, USE_MOCK } from "@/lib/mock-data";
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8000";
+const BACKEND_URL = process.env.BACKEND_URL;
 
 export async function GET(
   _req: NextRequest,
@@ -33,7 +33,7 @@ export async function PUT(
   if (USE_MOCK) return NextResponse.json({ success: true, brandId: id });
 
   const cookie = (await headers()).get("cookie") ?? "";
-  const origin = (await headers()).get("origin") ?? "http://localhost:3000";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
   const body = await req.text();
 
   try {
@@ -42,7 +42,7 @@ export async function PUT(
       headers: {
         "Content-Type": "application/json",
         cookie,
-        origin,
+        origin: appUrl ?? "",
       },
       body,
     });
@@ -61,7 +61,7 @@ export async function POST(
 ) {
   const { id } = await params;
   const cookie = (await headers()).get("cookie") ?? "";
-  const origin = (await headers()).get("origin") ?? "http://localhost:3000";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
   const contentType = req.headers.get("content-type") ?? "";
 
   try {
@@ -70,7 +70,7 @@ export async function POST(
       headers: {
         "content-type": contentType,
         cookie,
-        origin,
+        origin: appUrl ?? "",
       },
       body: req.body,
       // @ts-expect-error - duplex needed for streaming
