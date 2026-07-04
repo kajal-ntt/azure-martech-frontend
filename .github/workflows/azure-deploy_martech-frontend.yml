@@ -19,7 +19,8 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '22.x'
-
+      - name: Clear Next.js cache
+        run: rm -rf .next
       - name: npm install and build
         run: |
           npm install
