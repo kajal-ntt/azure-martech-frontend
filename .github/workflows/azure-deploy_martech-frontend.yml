@@ -22,12 +22,14 @@ jobs:
       - name: npm install and build
         run: |
           npm install
-          npm run build
+          npm run build -- --no-turbo 2>/dev/null || npm run build
         env:
           NEXT_PUBLIC_API_URL: https://martech-ddbhddg9eef9e8gv.centralindia-01.azurewebsites.net
           NEXT_PUBLIC_APP_URL: https://martech-frontend-c0are2h4bkanbmhq.centralindia-01.azurewebsites.net
           NEXT_PUBLIC_AGENT_API_URL: https://your-agents-app.azurewebsites.net/api/v1
           NEXT_TELEMETRY_DISABLED: 1
+          TURBOPACK: 0
+         
       - name: Prepare deployment package
         run: |
           cp -r .next/static .next/standalone/.next/static
