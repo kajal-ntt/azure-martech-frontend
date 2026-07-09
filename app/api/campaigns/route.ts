@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { MOCK_CAMPAIGNS, USE_MOCK } from "@/lib/mock-data";
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8000";
+const BACKEND_URL = process.env.BACKEND_URL;
 
 export async function POST(req: NextRequest) {
   if (USE_MOCK) {
@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
   }
 
   const cookie = (await headers()).get("cookie") ?? "";
-  const origin = (await headers()).get("origin") ?? "http://localhost:3000";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
   const body = await req.text();
 
   try {
@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
       headers: {
         "Content-Type": "application/json",
         cookie,
-        origin,
+        origin: appUrl ?? "",
       },
       body,
     });

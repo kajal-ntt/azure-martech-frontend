@@ -1,3 +1,8 @@
+
+// 1 USD ≈ 94 INR
+const USD_TO_INR = 94;
+const formatCost = (usd: number) => `₹${(usd * USD_TO_INR).toFixed(2)}`;
+
 export interface AgentTrace {
   id: string;
   agentName: string;
@@ -71,7 +76,7 @@ export default function AgentTraceTable({ traces }: AgentTraceTableProps) {
               "Creative Type",
               "Input Tokens",
               "Output Tokens",
-              "Total Cost (USD)",
+              "Total Cost (INR)",
               "Status",
             ].map((col) => (
               <th
@@ -126,7 +131,7 @@ export default function AgentTraceTable({ traces }: AgentTraceTableProps) {
                   {trace.outputTokens.toLocaleString()}
                 </td>
                 <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums text-zinc-700">
-                  ${cost.toFixed(6)}
+                  {formatCost(cost)}
                 </td>
                 <td className="whitespace-nowrap px-4 py-3">
                   <StatusBadge status={trace.status} />

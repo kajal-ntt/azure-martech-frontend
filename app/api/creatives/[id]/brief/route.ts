@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { MOCK_CREATIVES, USE_MOCK } from "@/lib/mock-data";
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8000";
+const BACKEND_URL = process.env.BACKEND_URL;
 
 // In-memory store for mock brief edits (persists for the dev server session)
 const mockBriefStore: Record<string, string> = {};

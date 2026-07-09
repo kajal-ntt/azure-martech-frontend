@@ -1,7 +1,7 @@
 async function checkRoute(path) {
-    console.log(`\nTesting: GET http://localhost:3000${path}`);
+    console.log(`\nTesting: GET process.env.NEXT_PUBLIC_APP_URL${path}`);
     try {
-        const res = await fetch(`http://localhost:3000${path}`);
+        const res = await fetch(`process.env.NEXT_PUBLIC_APP_URL${path}`);
         console.log(`Status: ${res.status}`);
         const text = await res.text();
         console.log(`Body: ${text}`);

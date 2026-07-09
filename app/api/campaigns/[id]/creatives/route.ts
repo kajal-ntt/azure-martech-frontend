@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { MOCK_CREATIVES, USE_MOCK } from "@/lib/mock-data";
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8000";
+const BACKEND_URL = process.env.BACKEND_URL;
 
 export async function POST(
   req: NextRequest,
@@ -23,13 +23,13 @@ export async function POST(
   }
 
   const cookie = (await headers()).get("cookie") ?? "";
-  const origin = (await headers()).get("origin") ?? "http://localhost:3000";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
   const body = await req.text();
 
   try {
     const backendRes = await fetch(`${BACKEND_URL}/api/campaigns/${id}/creatives`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", cookie, origin },
+      headers: { "Content-Type": "application/json", cookie, origin: appUrl ?? "" },
       body,
     });
     const text = await backendRes.text();

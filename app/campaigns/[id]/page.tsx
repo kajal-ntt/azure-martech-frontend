@@ -105,26 +105,18 @@ export default function CampaignDetailsPage() {
     const [refImageUploading, setRefImageUploading] = useState(false);
     const refImageInputRef = useRef<HTMLInputElement>(null);
 
-    // Normalise any raw GCS URL to a proxied /api/image-proxy URL the browser can load
-   const toProxiedUrl = useCallback((raw: string | null | undefined): string | null => {
-    if (!raw) return null;
+    const toProxiedUrl = useCallback(
+        (raw: string | null | undefined): string | null => {
+            if (!raw) return null;
 
-    // Already proxied
-    if (raw.startsWith("/api/image-proxy")) return raw;
+            if (raw.startsWith("/api/image-proxy")) {
+            return raw;
+            }
 
-    // ✅ HANDLE AZURE (IMPORTANT FIX)
-    if (raw.includes("blob.core.windows.net")) {
-        return raw; // don't proxy
-    }
-
-    // GCS fallback
-    if (raw.startsWith("gs://")) {
-        const https = raw.replace("gs://", "https://storage.googleapis.com/");
-        return `/api/image-proxy?url=${encodeURIComponent(https)}`;
-    }
-
-    return raw;
-}, []);
+            return `/api/image-proxy?url=${encodeURIComponent(raw)}`;
+        },
+        []
+    );
     const fetchSignedUrl = useCallback(async (id: string): Promise<string | null> => {
         try {
             const res = await fetch(`/api/creatives/${id}/signed-url`);
